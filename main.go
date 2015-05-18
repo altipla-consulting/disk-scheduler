@@ -71,20 +71,22 @@ func runSafe() error {
 	}
 
 	log.Println(" > Check if there is another instance with the disk...")
-	instance, err := findAttachedInstance(service, project, zone)
+	oldInstance, err := findAttachedInstance(service, project, zone)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if instance != "" {
-		log.Println(" > Deattaching disk from instance:", instance)
-		if err := detachDisk(service, project, zone, instance); err != nil {
+	if oldInstance != instanceName {
+		if oldInstance != "" {
+			log.Println(" > Deattaching disk from instance:", oldInstance)
+			if err := detachDisk(service, project, zone, oldInstance); err != nil {
+				return errors.Trace(err)
+			}
+		}
+
+		log.Println(" > Attach disk to this instance...")
+		if err := attachDisk(service, project, zone, instanceName); err != nil {
 			return errors.Trace(err)
 		}
-	}
-
-	log.Println(" > Attach disk to this instance...")
-	if err := attachDisk(service, project, zone, instanceName); err != nil {
-		return errors.Trace(err)
 	}
 
 	log.Println(" [*] Disk attached successfully!")
