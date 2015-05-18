@@ -33,7 +33,7 @@ func runSafe() error {
 		return errors.NotValidf("--disk and --path are required")
 	}
 
-	log.Println(" [*] Attaching disk", *flagDisk, "to the instance in path: ", *flagPath)
+	log.Println(" [*] Attaching disk", *flagDisk, "to the instance in path: ", *flagPath, "\n")
 
 	client := &http.Client{
 		Transport: &oauth2.Transport{
