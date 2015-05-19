@@ -142,9 +142,24 @@ func findAttachedInstance(service *compute.Service, project, zone string) (strin
 }
 
 func detachDisk(service *compute.Service, project, zone, instance string) error {
-	_, err := service.Instances.DetachDisk(project, zone, instance, *flagDisk).Do()
+	resp, err := service.Instances.DetachDisk(project, zone, instance, *flagDisk).Do()
 	if err != nil {
 		return errors.Trace(err)
+	}
+
+	for true {
+		operationResult, err := service.ZoneOperations.Get(project, zone, resp.Name).Do()
+		if err != nil {
+			return errors.Trace(err)
+		}
+
+		if operationResult.Error != nil {
+			return errors.Errorf("operation error, see: %s", resp.Name)
+		}
+
+		if operationResult.Status == "DONE" {
+			break
+		}
 	}
 
 	return nil
@@ -153,11 +168,26 @@ func detachDisk(service *compute.Service, project, zone, instance string) error 
 func attachDisk(service *compute.Service, project, zone, instance string) error {
 	disk := &compute.AttachedDisk{
 		DeviceName: *flagDisk,
-		Source:     fmt.Sprintf("https://content.googleapis.com/compute/v1/projects/%s/zones/%s/disks/%s", project, zone, *flagDisk),
+		Source:     fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/disks/%s", project, zone, *flagDisk),
 	}
-	_, err := service.Instances.AttachDisk(project, zone, instance, disk).Do()
+	resp, err := service.Instances.AttachDisk(project, zone, instance, disk).Do()
 	if err != nil {
 		return errors.Trace(err)
+	}
+
+	for true {
+		operationResult, err := service.ZoneOperations.Get(project, zone, resp.Name).Do()
+		if err != nil {
+			return errors.Trace(err)
+		}
+
+		if operationResult.Error != nil {
+			return errors.Errorf("operation error, see: %s", resp.Name)
+		}
+
+		if operationResult.Status == "DONE" {
+			break
+		}
 	}
 
 	return nil
