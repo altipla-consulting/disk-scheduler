@@ -96,8 +96,13 @@ func runSafe() error {
 
 func getMetadata(path string) (string, error) {
 	u := fmt.Sprintf("http://metadata.google.internal/computeMetadata/v1/%s", path)
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return "", errors.Trace(err)
+	}
+	req.Header.Set("Metadata-Flavor", "Google")
 
-	resp, err := http.Get(u)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", errors.Trace(err)
 	}
