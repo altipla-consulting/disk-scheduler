@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/juju/errors"
 	"golang.org/x/oauth2"
@@ -17,7 +18,6 @@ import (
 
 var (
 	flagDisk = flag.String("disk", "", "disk name to attach to the instance")
-	flagPath = flag.String("path", "", "path in the current instance to mount the disk")
 )
 
 func main() {
@@ -29,11 +29,11 @@ func main() {
 func runSafe() error {
 	flag.Parse()
 
-	if *flagDisk == "" || *flagPath == "" {
-		return errors.NotValidf("--disk and --path are required")
+	if *flagDisk == "" {
+		return errors.NotValidf("--disk flag is required")
 	}
 
-	log.Println(" [*] Attaching disk", *flagDisk, "to the instance in path: ", *flagPath)
+	log.Println(" [*] Attaching disk", *flagDisk, "to the instance...")
 
 	client := &http.Client{
 		Transport: &oauth2.Transport{
@@ -160,6 +160,8 @@ func detachDisk(service *compute.Service, project, zone, instance string) error 
 		if operationResult.Status == "DONE" {
 			break
 		}
+
+		time.Sleep(5 * time.Second)
 	}
 
 	return nil
@@ -188,6 +190,8 @@ func attachDisk(service *compute.Service, project, zone, instance string) error 
 		if operationResult.Status == "DONE" {
 			break
 		}
+
+		time.Sleep(5 * time.Second)
 	}
 
 	return nil
