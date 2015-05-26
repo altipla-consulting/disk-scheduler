@@ -1,0 +1,9 @@
+
+FROM golang
+MAINTAINER Ernesto Alejo <ernestokarim@gmail.com>
+
+RUN go get github.com/altipla-consulting/disk-scheduler
+
+ENV DISK invalid-disk
+
+ENTRYPOINT /go/bin/disk-scheduler -disk $DISK
